@@ -10,7 +10,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @copyright   	The XOOPS Project http://sourceforge.net/projects/xoops/
- * @license     	GNU GPL 2 (http://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+ * @license     	General Public License version 3 (http://labs.coop/briefs/legal/general-public-licence/13,3.html)
  * @author      	Simon Roberts (wishcraft) <wishcraft@users.sourceforge.net>
  * @subpackage  	please
  * @description 	Subjects Ticking for Support/Faults/Management of Batch Group & User managed emails tickets
