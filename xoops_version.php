@@ -28,6 +28,28 @@ if (!defined('XOOPS_ROOT_PATH')) {
 if (!defined(_MI_PLEASE_MODULE_DIRNAME))
 	define('_MI_PLEASE_MODULE_DIRNAME', basename(__DIR__));
 	
+global $pleaseModule, $pleaseConfigsList, $pleaseConfigs, $pleaseConfigsOptions;
+
+if (empty($pleaseModule))
+{
+	if (is_a($pleaseModule = xoops_gethandler('module')->getByDirname(_MI_PLEASE_MODULE_DIRNAME), "XoopsModule"))
+	{
+		if (empty($pleaseConfigsList))
+		{
+			$pleaseConfigsList = xoops_gethandler('config')->getConfigsList($pleaseModule->getVar('mid'));
+		}
+		if (empty($pleaseConfigs))
+		{
+			$pleaseConfigs = xoops_gethandler('config')->getConfigs(new Criteria('conf_modid', $pleaseModule->getVar('mid')));
+		}
+		if (empty($pleaseConfigsOptions) && !empty($pleaseConfigs))
+		{
+			foreach($pleaseConfigs as $key => $config)
+				$pleaseConfigsOptions[$config->getVar('conf_name')] = $config->getConfigOptions(new Criteria('conf_id', $config->getVar('conf_id')));
+		}
+	}
+}
+
 $modversion['dirname'] 					= _MI_PLEASE_MODULE_DIRNAME;
 $modversion['name'] 					= _MI_PLEASE_MODULE_NAME;
 $modversion['version']     				= _MI_PLEASE_MODULE_VERSION;
@@ -74,8 +96,7 @@ $modversion['min_admin']      			= '1.1';
 
 // Database SQL File and Tables
 $modversion['sqlfile']['mysql'] 		= "sql/mysqli.sql";
-$modversion['tables'][0] 				= "noticer_sender";
-$modversion['tables'][1] 				= "noticer_email";
+$modversion['tables']	 				= file(__DIR__ . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'tables.diz');
 
 //Search
 $modversion['hasSearch'] 				= _MI_PLEASE_MODULE_HASSEARCH;
@@ -134,6 +155,12 @@ $modversion['configcat']['email']['description'] = _MI_PLEASE_CONFCAT_EMAIL_DESC
 $modversion['configcat']['systems']['name']        = _MI_PLEASE_CONFCAT_SYSTEMS;
 $modversion['configcat']['systems']['description'] = _MI_PLEASE_CONFCAT_SYSTEMS_DESC;
 
+$modversion['configcat']['reports']['name']        = _MI_PLEASE_CONFCAT_REPORTS;
+$modversion['configcat']['reports']['description'] = _MI_PLEASE_CONFCAT_REPORTS_DESC;
+
+$modversion['configcat']['offline']['name']        = _MI_PLEASE_CONFCAT_OFFLINE;
+$modversion['configcat']['offline']['description'] = _MI_PLEASE_CONFCAT_OFFLINE_DESC;
+
 // Config categories
 $i=0;
 ++$i;
@@ -172,6 +199,7 @@ $modversion['config'][$i]['valuetype']   = 'text';
 $modversion['config'][$i]['default']     = 'html';
 $modversion['config'][$i]['options']     = array();
 $modversion['config'][$i]['category']    = 'seo';
+
 ++$i;
 $modversion['config'][$i]['name']        = 'email_method';
 $modversion['config'][$i]['title']       = '_MI_PLEASE_EMAILMETHOD';
@@ -179,7 +207,8 @@ $modversion['config'][$i]['description'] = '_MI_PLEASE_EMAILMETHOD_DESC';
 $modversion['config'][$i]['formtype']    = 'select';
 $modversion['config'][$i]['valuetype']   = 'text';
 $modversion['config'][$i]['default']     = 'class';
-$modversion['config'][$i]['options']     = array(_MI_PLEASE_EMAILMETHOD_PHP => 'class', _MI_PLEASE_EMAILMETHOD_PHP => 'extention');
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_EMAILMETHOD_PHP => 'class', 
+													_MI_PLEASE_EMAILMETHOD_PHP => 'extention'		);
 $modversion['config'][$i]['category']    = 'email';
 ++$i;
 $modversion['config'][$i]['name']        = 'email_typal';
@@ -188,7 +217,8 @@ $modversion['config'][$i]['description'] = '_MI_PLEASE_EMAILTYPAL_DESC';
 $modversion['config'][$i]['formtype']    = 'select';
 $modversion['config'][$i]['valuetype']   = 'text';
 $modversion['config'][$i]['default']     = 'imap';
-$modversion['config'][$i]['options']     = array(_MI_PLEASE_EMAILTYPAL_IMAP => 'imap', _MI_PLEASE_EMAILTYPAL_POP3 => 'pop3');;
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_EMAILTYPAL_IMAP => 'imap', 
+													_MI_PLEASE_EMAILTYPAL_POP3 => 'pop3'			);
 $modversion['config'][$i]['category']    = 'email';
 ++$i;
 $modversion['config'][$i]['name']        = 'email_service';
@@ -230,10 +260,12 @@ $modversion['config'][$i]['category']    = 'email';
 $modversion['config'][$i]['name']        = 'email_folder';
 $modversion['config'][$i]['title']       = '_MI_PLEASE_EMAILFOLDER';
 $modversion['config'][$i]['description'] = '_MI_PLEASE_EMAILFOLDER_DESC';
-$modversion['config'][$i]['formtype']    = 'text';
-$modversion['config'][$i]['valuetype']   = 'text';
-$modversion['config'][$i]['default']     = 'INBOX';
-$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array()';
+$modversion['config'][$i]['default']     = array('DEFAULT');
+$modversion['config'][$i]['options']     = (count(	$inboxes = please_getMailboxInboxes())	>	0	?	
+													$inboxes	:	
+													array(	_MI_PLEASE_EMAILFOLDER_DEFAULT => 'DEFAULT')		);
 $modversion['config'][$i]['category']    = 'email';
 ++$i;
 $modversion['config'][$i]['name']        = 'email_reply_addy';
@@ -271,11 +303,596 @@ $modversion['config'][$i]['valuetype']   = 'int';
 $modversion['config'][$i]['default']     = true;
 $modversion['config'][$i]['options']     = array();
 $modversion['config'][$i]['category']    = 'email';
-
+++$i;
+$modversion['config'][$i]['name']        = 'salting';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_SALTING';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_SALTING_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array("please", "department", "owner", "item");
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_SALTING_PLEASE => "please", 
+													_MI_PLEASE_SALTING_SYSTEM => "system", 
+													_MI_PLEASE_SALTING_DEPARTMENTAL => "department", 
+													_MI_PLEASE_SALTING_CLIENT => "client",
+													_MI_PLEASE_SALTING_OWNER => "owner", 
+													_MI_PLEASE_SALTING_ITEM => "item", 
+													_MI_PLEASE_SALTING_DATE => "date"					);
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'ticketers';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_TICKETERS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_TICKETERS_DESC';
+$modversion['config'][$i]['formtype']    = 'yesno';
+$modversion['config'][$i]['valuetype']   = 'int';
+$modversion['config'][$i]['default']     = false;
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'ticketers_groups';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_TICKETERS_GROUPS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_TICKETERS_GROUPS_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(		XOOPS_GROUP_USERS => XOOPS_GROUP_USERS			);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'ticketers_only';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_TICKETERS_ONLY';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_TICKETERS_ONLY_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	XOOPS_GROUP_USER => XOOPS_GROUP_USER, 
+													XOOPS_GROUP_ANONYMOUS => XOOPS_GROUP_ANONYMOUS	);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'staff';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_STAFF';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_STAFF_DESC';
+$modversion['config'][$i]['formtype']    = 'yesno';
+$modversion['config'][$i]['valuetype']   = 'int';
+$modversion['config'][$i]['default']     = false;
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'staff_groups';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_STAFF_GROUPS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_STAFF_GROUPS_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF		);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'staff_only';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_STAFF_ONLY';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_STAFF_ONLY_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_MANAGER => _IN_PLEASE_GROUP_MANAGER, 
+													_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF, 
+													XOOPS_GROUP_ADMIN => XOOPS_GROUP_ADMIN			);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'support';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_SUPPORT';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_SUPPORT_DESC';
+$modversion['config'][$i]['formtype']    = 'yesno';
+$modversion['config'][$i]['valuetype']   = 'int';
+$modversion['config'][$i]['default']     = false;
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'support_groups';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_SUPPORT_GROUPS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_SUPPORT_GROUPS_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF, 
+													_IN_PLEASE_GROUP_SUPPORT => _IN_PLEASE_GROUP_SUPPORT	);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'support_only';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_SUPPORT_ONLY';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_SUPPORT_ONLY_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_MANAGER => _IN_PLEASE_GROUP_MANAGER, 
+													_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF, 
+													_IN_PLEASE_GROUP_SUPPORT => PLEASE_GROUP_SUPPORT, 
+													XOOPS_GROUP_ADMIN => XOOPS_GROUP_ADMIN			);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'manager';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_MANAGER';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_MANAGER_DESC';
+$modversion['config'][$i]['formtype']    = 'yesno';
+$modversion['config'][$i]['valuetype']   = 'int';
+$modversion['config'][$i]['default']     = false;
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'manager_groups';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_MANAGER_GROUPS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_MANAGER_GROUPS_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_MANAGER => _IN_PLEASE_GROUP_MANAGER, 
+													_IN_PLEASE_GROUP_SUPPORT => _IN_PLEASE_GROUP_SUPPORT, 
+													_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF 		);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'manager_only';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_MANAGER_ONLY';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_MANAGER_ONLY_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_MANAGER => _IN_PLEASE_GROUP_MANAGER, 
+													_IN_PLEASE_GROUP_SUPPORT => _IN_PLEASE_GROUP_SUPPORT, 
+													_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF, 
+													XOOPS_GROUP_ADMIN => XOOPS_GROUP_ADMIN			);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'reportee';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTEE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTEE_DESC';
+$modversion['config'][$i]['formtype']    = 'yesno';
+$modversion['config'][$i]['valuetype']   = 'int';
+$modversion['config'][$i]['default']     = false;
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'reportee_groups';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTEE_GROUPS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTEE_GROUPS_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_REPORTEE => _IN_PLEASE_GROUP_REPORTEE	);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'reportee_only';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTEE_ONLY';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTEE_ONLY_DESC';
+$modversion['config'][$i]['formtype']    = 'group_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_IN_PLEASE_GROUP_MANAGER => _IN_PLEASE_GROUP_MANAGER, 
+													_IN_PLEASE_GROUP_SUPPORT => _IN_PLEASE_GROUP_SUPPORT, 
+													_IN_PLEASE_GROUP_STAFF => _IN_PLEASE_GROUP_STAFF, 
+													_IN_PLEASE_GROUP_REPORTEE => _IN_PLEASE_GROUP_REPORTEE,
+													XOOPS_GROUP_ADMIN => XOOPS_GROUP_ADMIN, 
+													XOOPS_GROUP_USER => XOOPS_GROUP_USER, 
+													XOOPS_GROUP_ANONYMOUS => XOOPS_GROUP_ANONYMOUS	);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'cron_method';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_CRON_METHOD';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_CRON_METHOD_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_CRON_METHOD_PRELOADS =>	_MI_PLEASE_CRON_METHOD_PRELOADS 	);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_CRON_METHOD_PRELOADS_DESC =>	_MI_PLEASE_CRON_METHOD_PRELOADS, 
+													_MI_PLEASE_CRON_METHOD_SCHEDULE_DESC =>	_MI_PLEASE_CRON_METHOD_SCHEDULE	);
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketer_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETER_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETER_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_ticketer_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_ticketer_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketer_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETER_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETER_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_ticketer_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_ticketer_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketer_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETER_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETER_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,	
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,		
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,	
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketer_schedule';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETER_SCHEDULE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETER_SCHEDULE_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORT_SCHEDULE_INSTANCE => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY => _MI_PLEASE_SCHEDULE_WEEKLY							);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORT_SCHEDULE_TOP20_DESC => _MI_PLEASE_REPORT_TOP20_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_HIGHLIGHTS_DESC => _MI_PLEASE_REPORT_HIGHLIGHTS_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_INSTANCE_DESC => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_DAILY_DESC => _MI_PLEASE_SCHEDULE_DAILY,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY_DESC => _MI_PLEASE_SCHEDULE_WEEKLY,
+													_MI_PLEASE_REPORT_SCHEDULE_FORTNIGHTLY_DESC => _MI_PLEASE_SCHEDULE_FORTNIGHTLY,
+													_MI_PLEASE_REPORT_SCHEDULE_MONTHLY_DESC => _MI_PLEASE_SCHEDULE_MONTHLY,
+													_MI_PLEASE_REPORT_SCHEDULE_QUARTERLY_DESC => _MI_PLEASE_SCHEDULE_QUARTERLY,
+													_MI_PLEASE_REPORT_SCHEDULE_ANNUALLY_DESC => _MI_PLEASE_SCHEDULE_ANNUALLY				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketee_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETEE_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETEE_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_ticketee_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_ticketee_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketee_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETEE_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETEE_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_ticketee_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_ticketee_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_ticketee_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_TICKETEE_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_TICKETEE_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'systems';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_staff_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_STAFF_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_STAFF_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_staff_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_staff_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_staff_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_STAFF_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_STAFF_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_staff_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_staff_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_staff_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_STAFF_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_STAFF_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_staff_schedule';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_STAFF_SCHEDULE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_STAFF_SCHEDULE_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORT_SCHEDULE_INSTANCE => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY => _MI_PLEASE_SCHEDULE_WEEKLY							);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORT_SCHEDULE_TOP20_DESC => _MI_PLEASE_REPORT_TOP20_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_HIGHLIGHTS_DESC => _MI_PLEASE_REPORT_HIGHLIGHTS_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_INSTANCE_DESC => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_DAILY_DESC => _MI_PLEASE_SCHEDULE_DAILY,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY_DESC => _MI_PLEASE_SCHEDULE_WEEKLY,
+													_MI_PLEASE_REPORT_SCHEDULE_FORTNIGHTLY_DESC => _MI_PLEASE_SCHEDULE_FORTNIGHTLY,
+													_MI_PLEASE_REPORT_SCHEDULE_MONTHLY_DESC => _MI_PLEASE_SCHEDULE_MONTHLY,
+													_MI_PLEASE_REPORT_SCHEDULE_QUARTERLY_DESC => _MI_PLEASE_SCHEDULE_QUARTERLY,
+													_MI_PLEASE_REPORT_SCHEDULE_ANNUALLY_DESC => _MI_PLEASE_SCHEDULE_ANNUALLY				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_support_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_SUPPORT_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_SUPPORT_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_support_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_support_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_support_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_SUPPORT_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_SUPPORT_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_support_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_support_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_support_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_SUPPORT_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_SUPPORT_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_support_schedule';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_SUPPORT_SCHEDULE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_SUPPORT_SCHEDULE_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORT_SCHEDULE_INSTANCE => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY => _MI_PLEASE_SCHEDULE_WEEKLY							);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORT_SCHEDULE_TOP20_DESC => _MI_PLEASE_REPORT_TOP20_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_HIGHLIGHTS_DESC => _MI_PLEASE_REPORT_HIGHLIGHTS_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_INSTANCE_DESC => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_DAILY_DESC => _MI_PLEASE_SCHEDULE_DAILY,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY_DESC => _MI_PLEASE_SCHEDULE_WEEKLY,
+													_MI_PLEASE_REPORT_SCHEDULE_FORTNIGHTLY_DESC => _MI_PLEASE_SCHEDULE_FORTNIGHTLY,
+													_MI_PLEASE_REPORT_SCHEDULE_MONTHLY_DESC => _MI_PLEASE_SCHEDULE_MONTHLY,
+													_MI_PLEASE_REPORT_SCHEDULE_QUARTERLY_DESC => _MI_PLEASE_SCHEDULE_QUARTERLY,
+													_MI_PLEASE_REPORT_SCHEDULE_ANNUALLY_DESC => _MI_PLEASE_SCHEDULE_ANNUALLY				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_department_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_DEPARTMENT_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_DEPARTMENT_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_department_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_department_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_department_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_DEPARTMENT_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_DEPARTMENT_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_department_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_department_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_department_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_DEPARTMENT_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_DEPARTMENT_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_department_schedule';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_DEPARTMENT_SCHEDULE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_DEPARTMENT_SCHEDULE_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORT_SCHEDULE_INSTANCE => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY => _MI_PLEASE_SCHEDULE_WEEKLY							);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORT_SCHEDULE_TOP20_DESC => _MI_PLEASE_REPORT_TOP20_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_HIGHLIGHTS_DESC => _MI_PLEASE_REPORT_HIGHLIGHTS_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_INSTANCE_DESC => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_DAILY_DESC => _MI_PLEASE_SCHEDULE_DAILY,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY_DESC => _MI_PLEASE_SCHEDULE_WEEKLY,
+													_MI_PLEASE_REPORT_SCHEDULE_FORTNIGHTLY_DESC => _MI_PLEASE_SCHEDULE_FORTNIGHTLY,
+													_MI_PLEASE_REPORT_SCHEDULE_MONTHLY_DESC => _MI_PLEASE_SCHEDULE_MONTHLY,
+													_MI_PLEASE_REPORT_SCHEDULE_QUARTERLY_DESC => _MI_PLEASE_SCHEDULE_QUARTERLY,
+													_MI_PLEASE_REPORT_SCHEDULE_ANNUALLY_DESC => _MI_PLEASE_SCHEDULE_ANNUALLY				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_manager_heights';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_MANAGER_HEIGHTS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_MANAGER_HEIGHTS_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_manager_heights', 0, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_manager_heights', $toll, 65, 95, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_manager_lowes';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_MANAGER_LOWES';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_MANAGER_LOWES_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'float';
+$modversion['config'][$i]['default']     = $toll = pleaseGetTollerence('reports_manager_lowes', 0, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['options']     = pleaseGetTollerence('reports_manager_lowes', $toll, 15, 40, substr(microtime(false), strpos(microtime(false), " ")+1));
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_manager_run';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_MANAGER_RUN';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_MANAGER_RUN_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORTS_TICKET_OPENED_DESC => _MI_PLEASE_REPORTS_TICKET_OPENED,
+													_MI_PLEASE_REPORTS_TICKET_SPAM => _MI_PLEASE_REPORTS_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED			);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORTS_TICKET_SPAM_DESC => _MI_PLEASE_REPORTS_TICKET_SPAM,
+													_MI_PLEASE_REPORTS_TICKET_OPEN_DESC => _MI_PLEASE_REPORTS_TICKET_OPEN,
+													_MI_PLEASE_REPORTS_TICKET_CLAIMED_DESC => _MI_PLEASE_REPORTS_TICKET_CLAIMED,
+													_MI_PLEASE_REPORTS_TICKET_ESCALATED_DESC => _MI_PLEASE_REPORTS_TICKET_ESCALATED,
+													_MI_PLEASE_REPORTS_TICKETS_STAFF_DESC => _MI_PLEASE_REPORTS_TICKETS_STAFF,
+													_MI_PLEASE_REPORTS_TICKETS_MANAGER_DESC => _MI_PLEASE_REPORTS_TICKETS_MANAGER,
+													_MI_PLEASE_REPORTS_TICKETS_DEPARTMENT_DESC => _MI_PLEASE_REPORTS_TICKETS_DEPARTMENT,
+													_MI_PLEASE_REPORTS_TICKETS_MANTIS_DESC => _MI_PLEASE_REPORTS_TICKETS_MANTIS,
+													_MI_PLEASE_REPORTS_MANTIS_OPENED_DESC => _MI_PLEASE_REPORTS_MANTIS_OPENED,
+													_MI_PLEASE_REPORTS_MANTIS_ASSIGNED_DESC => _MI_PLEASE_REPORTS_MANTIS_ASSIGNED,
+													_MI_PLEASE_REPORTS_MANTIS_STATUS_DESC => _MI_PLEASE_REPORTS_MANTIS_STATUS,
+													_MI_PLEASE_REPORTS_MANTIS_RESPONDED_DESC => _MI_PLEASE_REPORTS_MANTIS_RESPONDED,
+													_MI_PLEASE_REPORTS_MANTIS_REPONSEREQ_DESC => _MI_PLEASE_REPORTS_MANTIS_REPONSEREQ,
+													_MI_PLEASE_REPORTS_MANTIS_CLOSED_DESC => _MI_PLEASE_REPORTS_MANTIS_CLOSED				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'reports_manager_schedule';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_REPORTS_MANAGER_SCHEDULE';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_REPORTS_MANAGER_SCHEDULE_DESC';
+$modversion['config'][$i]['formtype']    = 'select_multi';
+$modversion['config'][$i]['valuetype']   = 'array';
+$modversion['config'][$i]['default']     = array(	_MI_PLEASE_REPORT_SCHEDULE_INSTANCE => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY => _MI_PLEASE_SCHEDULE_WEEKLY							);
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_REPORT_SCHEDULE_TOP20_DESC => _MI_PLEASE_REPORT_TOP20_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_HIGHLIGHTS_DESC => _MI_PLEASE_REPORT_HIGHLIGHTS_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_INSTANCE_DESC => _MI_PLEASE_REPORT_SCHEDULE_INSTANCE,
+													_MI_PLEASE_REPORT_SCHEDULE_DAILY_DESC => _MI_PLEASE_SCHEDULE_DAILY,
+													_MI_PLEASE_REPORT_SCHEDULE_WEEKLY_DESC => _MI_PLEASE_SCHEDULE_WEEKLY,
+													_MI_PLEASE_REPORT_SCHEDULE_FORTNIGHTLY_DESC => _MI_PLEASE_SCHEDULE_FORTNIGHTLY,
+													_MI_PLEASE_REPORT_SCHEDULE_MONTHLY_DESC => _MI_PLEASE_SCHEDULE_MONTHLY,
+													_MI_PLEASE_REPORT_SCHEDULE_QUARTERLY_DESC => _MI_PLEASE_SCHEDULE_QUARTERLY,
+													_MI_PLEASE_REPORT_SCHEDULE_ANNUALLY_DESC => _MI_PLEASE_SCHEDULE_ANNUALLY				);
+$modversion['config'][$i]['category']    = 'reports';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_close';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_CLOSED';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_CLOSED_DESC';
+$modversion['config'][$i]['formtype']    = 'select';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = 'delete';
+$modversion['config'][$i]['options']     = array(	_MI_PLEASE_OFFLINE_CLOSED_DELETE_DESC => _MI_PLEASE_OFFLINE_CLOSED_DELETE,
+													_MI_PLEASE_OFFLINE_CLOSED_COPYTO_DESC => _MI_PLEASE_OFFLINE_CLOSED_COPYTO,
+													_MI_PLEASE_OFFLINE_CLOSED_SENDFTP_DESC => _MI_PLEASE_REPORT_SCHEDULE_SENDFTP,
+													_MI_PLEASE_OFFLINE_CLOSED_NOTHING_DESC => _MI_PLEASE_OFFLINE_CLOSED_NOTHING		);
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_copyto';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_COPYTO';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_COPYTO_DESC';
+$modversion['config'][$i]['formtype']    = 'text';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = dirname(dirname(dirname(dirname(__DIR__)))) . DIRECTORY_SEPARATOR . 'offline';
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_ftpserver';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_FTPSERVER';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_FTPSERVER_DESC';
+$modversion['config'][$i]['formtype']    = 'text';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = 'ftp'.parse_url(XOOPS_URL, PHP_URL_HOST);
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_ftpport';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_FTPPORT';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_FTPPORT_DESC';
+$modversion['config'][$i]['formtype']    = 'text';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = '22';
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_ftpuser';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_FTPUSER';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_FTPUSER_DESC';
+$modversion['config'][$i]['formtype']    = 'text';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = '';
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_ftppass';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_FTPPASS';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_FTPPASS_DESC';
+$modversion['config'][$i]['formtype']    = 'password';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = '';
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
+++$i;
+$modversion['config'][$i]['name']        = 'offline_ftppath';
+$modversion['config'][$i]['title']       = '_MI_PLEASE_OFFLINE_FTPPATH';
+$modversion['config'][$i]['description'] = '_MI_PLEASE_OFFLINE_FTPPATH_DESC';
+$modversion['config'][$i]['formtype']    = 'text';
+$modversion['config'][$i]['valuetype']   = 'text';
+$modversion['config'][$i]['default']     = '/';
+$modversion['config'][$i]['options']     = array();
+$modversion['config'][$i]['category']    = 'offline';
 
 
 // Notification
-$modversion['hasNotification']             = 1;
+$modversion['hasNotification']             = false;
 //$modversion['notification']['lookup_file'] = 'include/notification.inc.php';
 //$modversion['notification']['lookup_func'] = 'publisher_notify_iteminfo';
 

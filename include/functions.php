@@ -24,6 +24,10 @@
 
 if (!function_exists("pleaseInstantiateBlowfish"))
 {
+	/**
+	 * Instances Blow Fish Encryption Salts
+	 * 
+	 */
 	function pleaseInstantiateBlowfish()
 	{
 		/**
@@ -77,7 +81,7 @@ if (!function_exists("getURIData")) {
 	*
 	* @return 		float()
 	*/
-	function getURIData($uri = '', $posts = array(), $headers = array(), $timeout = 16, $connectout = 14)
+	function getURIData($uri = '', $posts = array(), $headers = array(), $timeout = 45, $connectout = 45)
 	{
 		if (!function_exists("curl_init"))
 		{
@@ -158,3 +162,161 @@ if (!function_exists("writeRawFile")) {
 		return fclose($ff);
 	}
 }
+
+if (!function_exists("pleaseGetTollerence")) {
+	/**
+	 * 
+	 * @param string $confname
+	 * @param integer $value
+	 * @param integer $min
+	 * @param integer $max
+	 * @param integer $seed
+	 * @return unknown|number|multitype:number |boolean
+	 */
+	function pleaseGetTollerence($confname = '', $value = 0, $min = 10, $max = 90, $seed = 0)
+	{
+		static $step = 4;
+		global $pleaseModule, $pleaseConfigs, $pleaseConfigsList, $pleaseConfigsOptions;
+		
+		if ($seed == 0)
+			$seed = microtime(true);
+		// Randomise from seed		
+		mt_rand(-($seed + (mt_rand(0, $seed/4)/100000)), ($seed + (mt_rand(0, $seed/4)/100000)));
+		mt_rand(-($seed + (mt_rand(0, $seed/3)/100000)), ($seed + (mt_rand(0, $seed/3)/100000)));
+		mt_rand(-($seed + (mt_rand(0, $seed/2)/100000)), ($seed + (mt_rand(0, $seed/2)/100000)));
+		mt_rand(-($seed + (mt_rand(0, $seed/5)/100000)), ($seed + (mt_rand(0, $seed/5)/100000)));
+
+		// get tollerence integer or random envaluement arrays!
+		if ($value = 0)
+		{
+			if (isset($pleaseConfigsList[$confname]))
+				return $pleaseConfigsList[$confname];
+			else
+			{
+				if (mt_rand(-2,1)>0)
+					$step = mt_rand(3,8);
+				$value = 0;
+				for($i = $min; $i <= mt_rand($min, $max); $i=$i+$step)
+					$value = $value + $step;
+				return $value;
+			}
+		} else {
+			$ret = array();
+			if (!isset($pleaseConfigsOptions[$confname]))
+			{
+				$options = array();
+				foreach($pleaseConfigs as $key => $config)
+					if ($config->getVar('conf_name') = $confname)
+					{
+						$options = $config->getConfigOptions(new Criteria('conf_id', $config->getVar('conf_id')));
+						continue;
+					}
+				if (!empty($options))
+				{
+					$pleaseConfigsOptions[$confname] = $options;
+					foreach($options as $id => $option)
+						$ret[$option->getVar('confop_name')] = $option->getVar('confop_value');
+				}
+			} else {
+				foreach($pleaseConfigsOptions[$confname] as $id => $option)
+					$ret[$option->getVar('confop_name')] = $option->getVar('confop_value');
+			}
+			if (empty($ret))
+			{
+				$ret = array();
+				for($i = $min; $i <= $max; $i=$i+$step)
+					$ret["$i%"] = $i;
+			}
+			return $ret;
+		}
+		return false;
+	}
+}
+
+
+if (!function_exists("getEnumeratorValues")) {
+	/**
+	 * Loads a field enumerator values
+	 * 
+	 * @param string $filename
+	 * @param string $variable
+	 * @return array():
+	 */
+	function getEnumeratorValues($filename = '', $variable = '')
+	{
+		$variable = str_replace(array('-', ' '), "_", $variable);
+		static $ret = array();
+		if (!isset($ret[basename($file)]))
+			if (file_exists($file = __DIR__ . DIRECTORY_SEPARATOR . 'enumerators' . DIRECTORY_SEPARATOR . "$variable__" . str_replace("php", "diz", basename($filename))))
+				foreach( file($file) as $id => $value )
+					if (!empty($value))
+						$ret[basename($file)][$value] = $value;
+		return $ret[basename($file)];
+	}
+}
+
+if (!function_exists("pleaseDecryptPassword")) {
+	/**
+	 * Decrypts a password
+	 *
+	 * @param string $password
+	 * @param string $cryptiopass
+	 * @return string:
+	 */
+	function pleaseDecryptPassword($password = '', $cryptiopass = '')
+	{
+		$sql = "SELECT AES_DECRYPT(%s, %s) as `crypteec`";
+		list($result) = $GLOBALS["xoopsDB"]->fetchRow($GLOBALS["xoopsDB"]->queryF(sprintf($sql, $GLOBALS["xoopsDB"]->quote($password), $GLOBALS["xoopsDB"]->quote($cryptiopass))));
+		return $result;
+	}
+}
+
+
+if (!function_exists("pleaseEncryptPassword")) {
+	/**
+	 * Encrypts a password
+	 *
+	 * @param string $password
+	 * @param string $cryptiopass
+	 * @return string:
+	 */
+	function pleaseEncryptPassword($password = '', $cryptiopass = '')
+	{
+		$sql = "SELECT AES_ENCRYPT(%s, %s) as `encrypic`";
+		list($result) = $GLOBALS["xoopsDB"]->fetchRow($GLOBALS["xoopsDB"]->queryF(sprintf($sql, $GLOBALS["xoopsDB"]->quote($password), $GLOBALS["xoopsDB"]->quote($cryptiopass))));
+		return $result;
+	}
+}
+
+
+if (!function_exists("pleaseCompressData")) {
+	/**
+	 * Compresses a textualisation
+	 *
+	 * @param string $data
+	 * @return string:
+	 */
+	function pleaseCompressData($data = '')
+	{
+		$sql = "SELECT COMPRESS(%s) as `compressed`";
+		list($result) = $GLOBALS["xoopsDB"]->fetchRow($GLOBALS["xoopsDB"]->queryF(sprintf($sql, $GLOBALS["xoopsDB"]->quote($data))));
+		return $result;
+	}
+}
+
+
+if (!function_exists("pleaseDecompressData")) {
+	/**
+	 * Compresses a textualisation
+	 *
+	 * @param string $data
+	 * @return string:
+	 */
+	function pleaseDecompressData($data = '')
+	{
+		$sql = "SELECT DECOMPRESS(%s) as `compressed`";
+		list($result) = $GLOBALS["xoopsDB"]->fetchRow($GLOBALS["xoopsDB"]->queryF(sprintf($sql, $GLOBALS["xoopsDB"]->quote($data))));
+		return $result;
+	}
+}
+
