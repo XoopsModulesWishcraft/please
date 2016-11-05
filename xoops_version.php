@@ -96,7 +96,7 @@ $modversion['min_admin']      			= '1.1';
 
 // Database SQL File and Tables
 $modversion['sqlfile']['mysql'] 		= "sql/mysqli.sql";
-$modversion['tables']	 				= file(__DIR__ . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'tables.diz');
+$modversion['tables']	 				= explode("\n", file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'sql' . DIRECTORY_SEPARATOR . 'tables.diz'));
 
 //Search
 $modversion['hasSearch'] 				= _MI_PLEASE_MODULE_HASSEARCH;

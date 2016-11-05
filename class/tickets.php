@@ -63,6 +63,7 @@ class pleaseTickets extends pleaseXoopsObject
     	
         self::initVar('id', XOBJ_DTYPE_INT, null, false);
         self::initVar('state', XOBJ_DTYPE_ENUM, 'new', false, false, false, getEnumeratorValues(basename(__FILE__), 'state'));
+        self::initVar('mode', XOBJ_DTYPE_ENUM, 'Open', false, false, false, getEnumeratorValues(basename(__FILE__), 'mode'));
         self::initVar('ticket-key', XOBJ_DTYPE_TXTBOX, 'XXX-0000000XAA', false, 20);
         self::initVar('subject-id', XOBJ_DTYPE_INT, null, false);
         self::initVar('from-id', XOBJ_DTYPE_INT, null, false);

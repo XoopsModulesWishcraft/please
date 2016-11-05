@@ -1,6 +1,6 @@
 <?php
 /**
- * Please Messages Ticketer of Batch Group & User Messagess
+ * Please Spam_addresses Ticketer of Batch Group & User Spam_addressess
  *
  * You may not change or alter any portion of this comment or credits
  * of supporting developers from this source code or any supporting source code
@@ -13,7 +13,7 @@
  * @license     	General Public License version 3 (http://labs.coop/briefs/legal/general-public-licence/13,3.html)
  * @author      	Simon Roberts (wishcraft) <wishcraft@users.sourceforge.net>
  * @subpackage  	please
- * @description 	Messages Ticking for Support/Faults/Management of Batch Group & User managed emails tickets
+ * @description 	Spam_addresses Ticking for Support/Faults/Management of Batch Group & User managed emails Spam
  * @version			1.0.5
  * @link        	https://sourceforge.net/projects/chronolabs/files/XOOPS%202.5/Modules/please
  * @link        	https://sourceforge.net/projects/chronolabs/files/XOOPS%202.6/Modules/please
@@ -29,32 +29,22 @@ if (!defined('_MI_PLEASE_MODULE_DIRNAME')) {
 require_once (__DIR__ . DIRECTORY_SEPARATOR . 'objects.php');
 
 /**
- * Class for Messages in Please email ticketer
+ * Class for Spam_addresses in Please email ticketer
  *
  * For Table:-
  * <code>
- * CREATE TABLE `please_messages` (
- *   `id` mediumint(30) unsigned NOT NULL AUTO_INCREMENT,
- *   `typal` enum('ndn','inbound','outbound','spam','unknown') DEFAULT 'unknown',
- *   `email-id` mediumint(30) unsigned DEFAULT '0',
- *   `subject-id` mediumint(30) unsigned DEFAULT '0',
- *   `ticket-id` mediumint(30) unsigned DEFAULT '0',
- *   `message-id` varchar(64) DEFAULT '',
- *   `from-id` mediumint(30) unsigned DEFAULT '0',
- *   `spam-email` enum('Yes','No') DEFAULT 'No',
- *   `spam-checking` enum('enabled','disabled') DEFAULT 'disabled',
- *   `spam-training` enum('used','ignored') DEFAULT 'ignored',
- *   `words` int(10) unsigned DEFAULT '0',
- *   `files` int(10) unsigned DEFAULT '0',
- *   `when` int(12) unsigned DEFAULT '0',
- *   PRIMARY KEY (`id`),
- *   KEY `SEARCH` (`email-id`,`subject-id`,`ticket-id`,`message-id`(32))
+ * CREATE TABLE `please_spam_addresses` (
+ *   `id` mediumint(38) unsigned NOT NULL AUTO_INCREMENT,
+ *   `address-id` mediumint(30) unsigned DEFAULT '0',
+ *   `recieved` int(12) DEFAULT '0',
+ *   `last` int(12) DEFAULT '0',
+ *   PRIMARY KEY (`id`)
  * ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  * </code>
  * @author Simon Roberts (wishcraft@users.sourceforge.net)
  * @copyright copyright (c) 2015 labs.coop
  */
-class pleaseMessages extends pleaseXoopsObject
+class pleaseSpam_addresses extends pleaseXoopsObject
 {
 
 	var $handler = '';
@@ -63,18 +53,9 @@ class pleaseMessages extends pleaseXoopsObject
     {   	
     	
         self::initVar('id', XOBJ_DTYPE_INT, null, false);
-        self::initVar('typal', XOBJ_DTYPE_ENUM, 'unknown', false, false, false, getEnumeratorValues(basename(__FILE__), 'typal'));
-        self::initVar('email-id', XOBJ_DTYPE_INT, null, false);
-        self::initVar('subject-id', XOBJ_DTYPE_INT, null, false);
-        self::initVar('ticket-id', XOBJ_DTYPE_INT, null, false);
-        self::initVar('message-id', XOBJ_DTYPE_TXTBOX, null, false, 64);
-        self::initVar('from-id', XOBJ_DTYPE_INT, null, false);
-        self::initVar('spam-email', XOBJ_DTYPE_ENUM, 'No', false, false, false, getEnumeratorValues(basename(__FILE__), 'spam-email'));
-        self::initVar('spam-checking', XOBJ_DTYPE_ENUM, 'disabled', false, false, false, getEnumeratorValues(basename(__FILE__), 'spam-checking'));
-        self::initVar('spam-training', XOBJ_DTYPE_ENUM, 'ignored', false, false, false, getEnumeratorValues(basename(__FILE__), 'spam-training'));
-        self::initVar('words', XOBJ_DTYPE_INT, time(), false);
-        self::initVar('files', XOBJ_DTYPE_INT, time(), false);
-        self::initVar('when', XOBJ_DTYPE_INT, time(), false);
+        self::initVar('address-id', XOBJ_DTYPE_INT, null, false);
+        self::initVar('recieved', XOBJ_DTYPE_INT, null, false);
+        self::initVar('last', XOBJ_DTYPE_INT, null, false);
         
         $this->handler = __CLASS__ . 'Handler';
         if (!empty($id) && !is_null($id))
@@ -89,11 +70,11 @@ class pleaseMessages extends pleaseXoopsObject
 
 
 /**
- * Handler Class for Messages in Please email ticketer
+ * Handler Class for Spam_addresses in Please email ticketer
  * @author Simon Roberts (wishcraft@users.sourceforge.net)
  * @copyright copyright (c) 2015 labs.coop
  */
-class pleaseMessagesHandler extends pleaseXoopsObjectHandler
+class pleaseSpam_addressesHandler extends pleaseXoopsObjectHandler
 {
 	
 
@@ -102,14 +83,14 @@ class pleaseMessagesHandler extends pleaseXoopsObjectHandler
 	 * 
 	 * @var string
 	 */
-	var $tbl = 'please_messages';
+	var $tbl = 'please_Spam_addresses';
 	
 	/**
 	 * Child Object Handling Class
 	 *
 	 * @var string
 	 */
-	var $child = 'pleaseMessages';
+	var $child = 'pleaseSpam_addresses';
 	
 	/**
 	 * Child Object Identity Key
@@ -123,7 +104,7 @@ class pleaseMessagesHandler extends pleaseXoopsObjectHandler
 	 *
 	 * @var string
 	 */
-	var $envalued = 'message-id';
+	var $envalued = 'last';
 	
     function __construct(&$db) 
     {
