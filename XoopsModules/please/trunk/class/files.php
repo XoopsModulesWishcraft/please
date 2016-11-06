@@ -60,6 +60,9 @@ class pleaseFiles extends pleaseXoopsObject
     	
         self::initVar('id', XOBJ_DTYPE_INT, null, false);
         self::initVar('typal', XOBJ_DTYPE_ENUM, 'unknown', false, false, false, getEnumeratorValues(basename(__FILE__), 'typal'));
+        self::initVar('where', XOBJ_DTYPE_ENUM, 'xoops_data', false, false, false, getEnumeratorValues(basename(__FILE__), 'where'));
+        self::initVar('mimetype-id', XOBJ_DTYPE_INT, null, false);
+        self::initVar('fingerprint', XOBJ_DTYPE_TXTBOX, md5(null), false, 32);
         self::initVar('extension', XOBJ_DTYPE_TXTBOX, null, false, 30);
         self::initVar('filename', XOBJ_DTYPE_TXTBOX, null, false, 30);
         self::initVar('path', XOBJ_DTYPE_TXTBOX, null, false, 30);
