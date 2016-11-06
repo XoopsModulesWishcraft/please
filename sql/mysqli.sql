@@ -240,7 +240,9 @@ CREATE TABLE `please_emails_files` (
 CREATE TABLE `please_files` (
   `id` mediumint(38) unsigned NOT NULL AUTO_INCREMENT,
   `typal` enum('embedded','sent','attachment','unknown') DEFAULT 'unknown',
+  `where` enum('uploads','xoops_data') DEFAULT 'xoops_data',
   `mimetype-id` mediumint(30) unsigned NOT NULL DEFAULT '0',
+  `fingerprint` varchar(32) DEFAULT '--------------------------------',
   `extension` varchar(30) DEFAULT '.',
   `filename` varchar(255) DEFAULT '.',
   `path` varchar(255) DEFAULT '.',
