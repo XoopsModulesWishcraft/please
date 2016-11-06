@@ -31,6 +31,10 @@ define('_MI_PLEASE_GROUP_DESC_STAFF','This group is for anyone responding to ema
 define('_MI_PLEASE_GROUP_TYPE_MANAGER','please-manage');
 define('_MI_PLEASE_GROUP_NAME_MANAGER','Please Staff Manager');
 define('_MI_PLEASE_GROUP_DESC_MANAGER','This group is for anyone managing staff responding to a ticket in please that needs a username!');
+define('_MI_PLEASE_GROUP_TYPE_DEPARTMENT','please-depart');
+define('_MI_PLEASE_GROUP_NAME_DEPARTMENT','%s');
+define('_MI_PLEASE_GROUP_DESC_DEPARTMENT','%s');
+
 
 // Module definition headers for xoops_version.php
 define('_MI_PLEASE_MODULE_NAME','Please Email');
@@ -48,8 +52,8 @@ define('_MI_PLEASE_MODULE_WEBSITE','http://au.syd.labs.coop');
 define('_MI_PLEASE_MODULE_ADMINMODDIR','/Frameworks/moduleclasses/moduleadmin');
 define('_MI_PLEASE_MODULE_ADMINICON16','../../Frameworks/moduleclasses/icons/16');
 define('_MI_PLEASE_MODULE_ADMINICON32','./../Frameworks/moduleclasses/icons/32');
-define('_MI_PLEASE_MODULE_RELEASEINFO','');
-define('_MI_PLEASE_MODULE_RELEASEFILE','');
+define('_MI_PLEASE_MODULE_RELEASEINFO',__DIR__ . DIRECTORY_SEPARATOR . 'release.nfo');
+define('_MI_PLEASE_MODULE_RELEASEFILE','https://sourceforge.net/projects/chronolabs/files/XOOPS%202.5/Modules/please/xoops2.5_please_1.05.7z');
 define('_MI_PLEASE_MODULE_AUTHORREALNAME','Simon Antony Roberts');
 define('_MI_PLEASE_MODULE_AUTHORWEBSITE','http://internetfounder.wordpress.com');
 define('_MI_PLEASE_MODULE_AUTHORSITENAME','Exhumations from the desks of Chronographics');
@@ -80,8 +84,6 @@ define('_MI_PLEASE_CONFCAT_SYSTEMS','Please Email Ticketer System Settings');
 define('_MI_PLEASE_CONFCAT_SYSTEMS_DESC','');
 define('_MI_PLEASE_CONFCAT_REPORTS','Please System Reports Settings');
 define('_MI_PLEASE_CONFCAT_REPORTS_DESC','');
-define('_MI_PLEASE_CONFCAT_OFFLINE','Offline Operations Settings');
-define('_MI_PLEASE_CONFCAT_OFFLINE_DESC','');
 define('_MI_PLEASE_CONFCAT_SPAM','Spam Checking Settings');
 define('_MI_PLEASE_CONFCAT_SPAM_DESC','');
 

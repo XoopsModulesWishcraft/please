@@ -26,13 +26,15 @@ function xoops_module_uninstall_please(&$module) {
 	require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php';
 	
 	$sql = array();
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('groups'). " WHERE `groupid` = ". PLEASE_GROUP_CLIENT;
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('groups'). " WHERE `groupid` = ". PLEASE_GROUP_STAFF;
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('groups'). " WHERE `groupid` = ". PLEASE_GROUP_MANAGER;
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('group_permission'). " WHERE `gperm_groupid` = ". PLEASE_GROUP_CLIENT;
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('group_permission'). " WHERE `gperm_groupid` = ". PLEASE_GROUP_STAFF;
-	$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('group_permission'). " WHERE `gperm_groupid` = ". PLEASE_GROUP_MANAGER;
-
+	$criteria = new Criteria('group_type', 'please%', 'LIKE');
+	if ($results = $groups_handler->getObjects($criteria)) {
+		foreach($results as $group)
+		{
+			$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('groups'). " WHERE `groupid` = ". $group->getVar('groupid');
+			$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('group_permission'). " WHERE `gperm_groupid` = ". $group->getVar('groupid');
+		}
+	}
+	
 	foreach($sql as $question)
 		$GLOBALS['xoopsDB']->queryF($question);
 	
