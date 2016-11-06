@@ -41,7 +41,7 @@ define('_MI_PLEASE_MODULE_NAME','Email Ticketer Please!');
 define('_MI_PLEASE_MODULE_VERSION','1.05');
 define('_MI_PLEASE_MODULE_RELEASEDATE','');
 define('_MI_PLEASE_MODULE_STATUS','beta');
-define('_MI_PLEASE_MODULE_DESCRIPTION','Please email ticketer is for email ticketing and harvesting for departmental escalation and sorting based in keywords, include spam detection!');
+define('_MI_PLEASE_MODULE_DESCRIPTION','Is for email ticketing and harvesting for departmental escalation and sorting based in keywords, include spam detection!');
 define('_MI_PLEASE_MODULE_CREDITS','Mynamesnot, Wishcraft');
 define('_MI_PLEASE_MODULE_AUTHORALIAS','wishcraft');
 define('_MI_PLEASE_MODULE_HELP','page=help');
