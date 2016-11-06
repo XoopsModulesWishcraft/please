@@ -105,7 +105,9 @@ GitHub Profile: http://github.com/Chronolabs-Cooperative
 
 --[ Translation Author ]------------------------------------------------------------
 
-Languge: English
+Language: English
+CharSet: UTF8
+LangCode: EN
 Name: Simon Antony Roberts
 eMail: simon@staff.labs.coop
 Skype: antony.cipher
