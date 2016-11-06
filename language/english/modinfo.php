@@ -37,7 +37,7 @@ define('_MI_PLEASE_GROUP_DESC_DEPARTMENT','%s');
 
 
 // Module definition headers for xoops_version.php
-define('_MI_PLEASE_MODULE_NAME','Please Email');
+define('_MI_PLEASE_MODULE_NAME','Email Ticketer Please!');
 define('_MI_PLEASE_MODULE_VERSION','1.05');
 define('_MI_PLEASE_MODULE_RELEASEDATE','');
 define('_MI_PLEASE_MODULE_STATUS','beta');
@@ -45,7 +45,7 @@ define('_MI_PLEASE_MODULE_DESCRIPTION','Please email ticketer is for email ticke
 define('_MI_PLEASE_MODULE_CREDITS','Mynamesnot, Wishcraft');
 define('_MI_PLEASE_MODULE_AUTHORALIAS','wishcraft');
 define('_MI_PLEASE_MODULE_HELP','page=help');
-define('_MI_PLEASE_MODULE_LICENCE','gpl3');
+define('_MI_PLEASE_MODULE_LICENCE','gpl3+academic');
 define('_MI_PLEASE_MODULE_OFFICAL','0');
 define('_MI_PLEASE_MODULE_ICON','images/modicon.png');
 define('_MI_PLEASE_MODULE_WEBSITE','http://au.syd.labs.coop');
@@ -53,6 +53,7 @@ define('_MI_PLEASE_MODULE_ADMINMODDIR','/Frameworks/moduleclasses/moduleadmin');
 define('_MI_PLEASE_MODULE_ADMINICON16','../../Frameworks/moduleclasses/icons/16');
 define('_MI_PLEASE_MODULE_ADMINICON32','./../Frameworks/moduleclasses/icons/32');
 define('_MI_PLEASE_MODULE_RELEASEINFO',__DIR__ . DIRECTORY_SEPARATOR . 'release.nfo');
+define('_MI_PLEASE_MODULE_RELEASEXCODE',__DIR__ . DIRECTORY_SEPARATOR . 'release.xcode');
 define('_MI_PLEASE_MODULE_RELEASEFILE','https://sourceforge.net/projects/chronolabs/files/XOOPS%202.5/Modules/please/xoops2.5_please_1.05.7z');
 define('_MI_PLEASE_MODULE_AUTHORREALNAME','Simon Antony Roberts');
 define('_MI_PLEASE_MODULE_AUTHORWEBSITE','http://internetfounder.wordpress.com');
@@ -70,10 +71,10 @@ define('_MI_PLEASE_MODULE_DEVELOPERS','Simon Roberts (Wishcraft)'); // Sperated 
 define('_MI_PLEASE_MODULE_TESTERS',''); // Sperated by a Pipe (|)
 define('_MI_PLEASE_MODULE_TRANSLATERS',''); // Sperated by a Pipe (|)
 define('_MI_PLEASE_MODULE_DOCUMENTERS',''); // Sperated by a Pipe (|)
-define('_MI_PLEASE_MODULE_HASSEARCH',false);
+define('_MI_PLEASE_MODULE_HASSEARCH',true);
 define('_MI_PLEASE_MODULE_HASMAIN',true);
 define('_MI_PLEASE_MODULE_HASADMIN',true);
-define('_MI_PLEASE_MODULE_HASCOMMENTS',false);
+define('_MI_PLEASE_MODULE_HASCOMMENTS',true);
 
 // Configguration Categories
 define('_MI_PLEASE_CONFCAT_SEO','Search Engine Optimization');
