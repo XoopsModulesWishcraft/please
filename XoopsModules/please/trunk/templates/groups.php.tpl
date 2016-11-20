@@ -29,5 +29,11 @@
  		
  	if(!defined('PLEASE_GROUP_MANAGER'))
  		define('PLEASE_GROUP_MANAGER', %manager%); 
+ 
+  	if(!defined('PLEASE_SALT'))
+ 		define('PLEASE_SALT', "%salt%"); 
  		
+ 	if(!defined('PLEASE_SALT_WHENSET'))
+ 		define('PLEASE_SALT_WHENSET', "%whenset%"); 	
+ 				
  ?>

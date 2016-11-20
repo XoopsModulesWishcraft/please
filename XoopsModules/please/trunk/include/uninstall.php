@@ -24,7 +24,9 @@
 function xoops_module_uninstall_please(&$module) {
 
 	require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php';
-	
+	$groups_handler = xoops_getHandler('groups');
+	$users_handler = xoops_getHandler('users');
+	$uids = array();
 	$sql = array();
 	$criteria = new Criteria('group_type', 'please%', 'LIKE');
 	if ($results = $groups_handler->getObjects($criteria)) {
@@ -32,8 +34,19 @@ function xoops_module_uninstall_please(&$module) {
 		{
 			$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('groups'). " WHERE `groupid` = ". $group->getVar('groupid');
 			$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('group_permission'). " WHERE `gperm_groupid` = ". $group->getVar('groupid');
+			$ucriteria = new Criteria('gperm_groupid', $group->getVar('groupid'), '=');
+			if ($gresults = $groups_handler->getObjects($ucriteria)) {
+				foreach($gresults as $groupperm)
+				{
+					$user = $users_handler->get($groupperm->getVar('uid'));
+					if (!in_array(XOOPS_GROUP_ADMIN, $user->getGroups()))
+						$uids[$groupperm->getVar('uid')] = $groupperm->getVar('uid');
+				}
+			}
 		}
 	}
+	if (count($uids))
+		$sql[] = "DELETE FROM ".$GLOBALS['xoopsDB']->prefix('users'). " WHERE `uid` IN (". implode(", ", $uids) . ")";
 	
 	foreach($sql as $question)
 		$GLOBALS['xoopsDB']->queryF($question);
