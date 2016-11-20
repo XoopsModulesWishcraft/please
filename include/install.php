@@ -110,7 +110,7 @@ function xoops_module_pre_install_please(&$module) {
 	if (is_file(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php'))
 		unlink(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php');
 	$php = file_get_contents(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'groups.php.tpl');
-	file_put_contents(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php', str_replace('%client%', $gc, str_replace('%staff%', $gs, str_replace('%manager%, $gm, $php'))));
+	file_put_contents(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'groups.php', str_replace('%whenset%', date("D, d M Y, H:i:s"), str_replace('%salt%', please_install_generate_salt(), str_replace('%client%', $gc, str_replace('%staff%', $gs, str_replace('%manager%, $gm, $php'))))));
 	return true;
 }
 	
@@ -119,4 +119,32 @@ function xoops_module_install_please(&$module) {
 	
 }
 
+function please_install_generate_salt()
+{
+	$salt = '';
+	mt_srand(mt_rand(-microtime(true), microtime(true)));
+	mt_srand(mt_rand(-microtime(true), microtime(true)));
+	mt_srand(mt_rand(-microtime(true), microtime(true)));
+	mt_srand(mt_rand(-microtime(true), microtime(true)));
+	while (strlen($salt)<mt_rand(128,512))
+	{
+		mt_srand(mt_rand(-microtime(true), microtime(true)));
+		switch((string)mt_rand(0,3))
+		{
+			default:
+				$salt .= chr(mt_rand(ord("-"), ord("|")));
+				break;
+			case "1":
+				$salt .= chr(mt_rand(ord("A"), ord("Z")));
+				break;
+			case "2":
+				$salt .= chr(mt_rand(ord("a"), ord("z")));
+				break;
+			case "2":
+				$salt .= chr(mt_rand(ord("0"), ord("9")));
+				break;
+		}
+	}
+	return $salt;
+}
 ?>

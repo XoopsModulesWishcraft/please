@@ -84,6 +84,11 @@ class pleaseTickets extends pleaseXoopsObject
         
     }
 
+    function getAdminLink()
+    {
+    	$dirname = basename(dirname(__DIR__));
+    	return XOOPS_URL . '/modules/'.$dirname."/admin/view-ticket.php?id=" . $this->getMD5('id');
+    }
 }
 
 

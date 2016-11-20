@@ -36,6 +36,19 @@ define('_MI_PLEASE_GROUP_NAME_DEPARTMENT','%s');
 define('_MI_PLEASE_GROUP_DESC_DEPARTMENT','%s');
 
 
+// Module Admin Menu
+define('_MI_PLEASE_ADMINMENU_HOME','Please Home');
+define('_MI_PLEASE_ADMINMENU_DEPARTMENTS','Ticketing Departments');
+define('_MI_PLEASE_ADMINMENU_ESCALATION','Ticketing Escalation');
+define('_MI_PLEASE_ADMINMENU_USERS','Department Users');
+define('_MI_PLEASE_ADMINMENU_FILES','Files');
+define('_MI_PLEASE_ADMINMENU_MIMETYPES','Mimetypes');
+define('_MI_PLEASE_ADMINMENU_TICKETS','Tickets');
+define('_MI_PLEASE_ADMINMENU_KEYWQRDS','Keywords');
+define('_MI_PLEASE_ADMINMENU_REPORTS','Reports');
+define('_MI_PLEASE_ADMINMENU_PERMISSIONS','Permissions');
+define('_MI_PLEASE_ADMINMENU_ABOUT','Email Ticketer About');
+
 // Module definition headers for xoops_version.php
 define('_MI_PLEASE_MODULE_NAME','Email Ticketer Please!');
 define('_MI_PLEASE_MODULE_VERSION','1.05');
